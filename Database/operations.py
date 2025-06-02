@@ -1,58 +1,7 @@
-import os
-from dotenv import load_dotenv
-import psycopg2
-from Database.interfaces import Database
-
-class PostgresConnection:
-    """Handles PostgreSQL connection management."""
-    
-    def __init__(self, host, port, user, password, database):
-        self.host = host
-        self.port = port
-        self.user = user
-        self.password = password
-        self.database = database
-        self.connection = None
-        self.cursor = None
-    
-    def connect(self):
-        """Establish connection to PostgreSQL database."""
-        try:
-            self.connection = psycopg2.connect(
-                host=self.host,
-                port=self.port,
-                user=self.user,
-                password=self.password,
-                database=self.database
-            )
-            self.cursor = self.connection.cursor()
-            return True
-        except psycopg2.Error as e:
-            print(f"Database connection error: {e}")
-            return False
-    
-    def close(self):
-        """Close the database connection."""
-        if self.connection:
-            self.connection.close()
-            self.connection = None
-            self.cursor = None
-    
-    def get_cursor(self):
-        """Get the current cursor."""
-        return self.cursor
-    
-    def commit(self):
-        """Commit the current transaction."""
-        if self.connection:
-            self.connection.commit()
-    
-    def __del__(self):
-        """Ensure connection is closed when object is destroyed."""
-        self.close()
+from Database.interfaces import TableOperations, DataOperationsWithoutDelete, Database
 
 
-class PostgresTableManager:
+class DatabaseTableManager(TableOperations):
     """Handles PostgreSQL table operations."""
     
     def __init__(self, connection_manager):
@@ -85,10 +34,11 @@ class PostgresTableManager:
             return False
 
 
-class PostgresDataManager:
+class DatabaseDataManager(DataOperationsWithoutDelete):
     """Handles PostgreSQL data operations."""
     
-    def __init__(self, connection_manager):
+    def __init__(self, placeholder_string, connection_manager):
+        super().__init__(placeholder_string)
         self.connection_manager = connection_manager
     
     def insert(self, table_name, data):
@@ -110,7 +60,7 @@ class PostgresDataManager:
             columns = list(data.keys())
             values = list(data.values())
             
-            placeholders = ", ".join(["%s" for _ in columns])
+            placeholders = ", ".join([self.placeholder_string for _ in columns])
             
             columns_str = ", ".join(columns)
             query = f"INSERT INTO {table_name} ({columns_str}) VALUES ({placeholders})"
@@ -192,7 +142,7 @@ class PostgresDataManager:
             if not cursor:
                 return 0
                 
-            set_clause = ", ".join([f"{column} = %s" for column in data.keys()])
+            set_clause = ", ".join([f"{column} = {self.placeholder_string}" for column in data.keys()])
             
             query = f"UPDATE {table_name} SET {set_clause} WHERE {condition}"
             print(query)
@@ -210,12 +160,12 @@ class PostgresDataManager:
             return 0
 
 
-class PostgresDatabase(Database):
-    """SQLite database implementation using composition of specialized components."""
+class DatabaseOperations(Database):
+    """Database implementation using composition of specialized components."""
     
     def __init__(self, connection_manager=None, 
                  table_manager=None, data_manager=None):
-        """Initialize the SQLiteDatabase.
+        """Initialize the DatabaseOperations.
         
         Args:
             connection_manager (PostgresConnection, optional): Custom connection manager

@@ -1,2 +1,1 @@
-from Database.sqlite import SQLiteDatabase
-from Database.postgres import PostgresDatabase
+from Database.operations import DatabaseOperations, DatabaseTableManager, DatabaseDataManager

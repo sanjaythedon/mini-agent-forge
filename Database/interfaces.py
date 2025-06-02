@@ -26,6 +26,8 @@ class TableOperations(ABC):
 
 class DataOperationsWithoutDelete(ABC):
     """Interface for data operations."""
+    def __init__(self, placeholder_string):
+        self.placeholder_string = placeholder_string
     
     @abstractmethod
     def insert(self, table_name, data):
