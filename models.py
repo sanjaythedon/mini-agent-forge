@@ -1,10 +1,12 @@
-from typing import Literal
+from enum import Enum
 from pydantic import BaseModel
 
 
-class Payload(BaseModel):
+class ToolEnum(Enum):
     WEB_SEARCH = "web-search"
     CALCULATOR = "calculator"
 
+
+class Payload(BaseModel):
     prompt: str
-    tool: Literal[WEB_SEARCH, CALCULATOR]
+    tool: ToolEnum
