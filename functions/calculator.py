@@ -71,7 +71,7 @@ def evaluate_postfix(postfix):
     
     return stack[0]
 
-def evaluate_expression(expression):
+def calculator(expression):
     """
     Aggregates all functions to evaluate the expression
     '2+2*5' -> 12
@@ -84,4 +84,4 @@ def evaluate_expression(expression):
 if __name__ == "__main__":  
     # Test it
     expr = '(3+4)*(2+5)'
-    print(evaluate_expression(expr))  # Output: 12
+    print(calculator(expr))  # Output: 12
