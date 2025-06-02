@@ -1,5 +1,5 @@
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ToolEnum(Enum):
@@ -8,5 +8,5 @@ class ToolEnum(Enum):
 
 
 class Payload(BaseModel):
-    prompt: str
+    prompt: str = Field(..., max_length=500)
     tool: ToolEnum
