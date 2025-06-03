@@ -1,0 +1,30 @@
+services:
+  database:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: sanjay
+      POSTGRES_PASSWORD: sanjey444
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+  app:
+    image: my_app
+    container_name: app
+    environment:
+      POSTGRES_HOST: database
+      REDIS_HOST: redis
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+      - redis
+      
+      
+      
+    
