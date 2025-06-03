@@ -20,12 +20,17 @@ def send_response(user_prompt: str, tool: ToolEnum):
     
     if tool == ToolEnum.CALCULATOR:
         results = calculator(user_prompt)
-    elif tool == ToolEnum.DUCKDUCKGO:
+    elif tool == ToolEnum.WEB_SEARCH:
         results = duckduckgo(user_prompt)
 
     llm = LLM()
-    system_prompt = "You are a helpful assistant who creates a friendly reply to the user's query. You will be given the user's query, the result of that query, and the tool name used to generate the result. Do not include any additional information or context."
-    prompt_to_llm = f"{user_prompt}\n\nTool: {tool}\n\nResponse: {results}"
+    
+    if tool == ToolEnum.CALCULATOR:
+        system_prompt = "You are a friendly assistant who helps with calculations. Present the user's calculation query along with its result in a clear, conversational way. Make your response concise but warm. Only use the information provided in the user's query and the calculation result."
+    elif tool == ToolEnum.WEB_SEARCH:
+        system_prompt = "You are a helpful assistant who provides web search results. Create a friendly response that lists all the search results with their titles and links in a well-formatted, easy-to-read manner. Start with a brief introduction acknowledging the user's search query, then present each result as a numbered list item with the title and clickable link. End with a brief, encouraging closing remark."
+    
+    prompt_to_llm = f"USER PROMPT:{user_prompt}\n\nTool: {tool}\n\nResponse: {results}"
     response = llm.generate(prompt_to_llm, system_prompt)
 
     connection_manager = PostgresConnection(

@@ -14,4 +14,12 @@ def duckduckgo(query: str):
 
     search = GoogleSearch(params)
     results = search.get_dict()
-    return results
+    res = []
+    organic_results = results.get("organic_results")
+    for result in organic_results:
+        data = {
+            'title': result.get("title"),
+            'link': result.get("link")
+        }
+        res.append(data)
+    return res
