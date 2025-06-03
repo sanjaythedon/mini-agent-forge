@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from main import send_response
-
+from fastapi.websockets import WebSocket
 from models import Payload
 
 app = FastAPI()
@@ -13,4 +13,14 @@ def read_root():
 def run(payload: Payload):
     response = send_response(payload.prompt, payload.tool)
     return {"message": response}
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+
+    while True:
+        data = await websocket.receive_text()
+        print(f"Received from client: {data}")
+        await websocket.send_text("Hello, client!")
+    
 
