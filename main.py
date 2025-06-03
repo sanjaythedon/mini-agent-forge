@@ -24,7 +24,7 @@ def send_response(user_prompt: str, tool: ToolEnum):
         results = duckduckgo(user_prompt)
 
     llm = LLM()
-    system_prompt = "You are a helpful assistant."
+    system_prompt = "You are a helpful assistant who creates a friendly reply to the user's query. You will be given the user's query, the result of that query, and the tool name used to generate the result. Do not include any additional information or context."
     prompt_to_llm = f"{user_prompt}\n\nTool: {tool}\n\nResponse: {results}"
     response = llm.generate(prompt_to_llm, system_prompt)
 
