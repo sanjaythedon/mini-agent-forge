@@ -17,11 +17,11 @@ def send_response(user_prompt: str, tool: ToolEnum):
     # cache = redis.get(user_prompt)
     # if cache:
     #     return cache   
-    
     if tool == ToolEnum.CALCULATOR:
         results = calculator(user_prompt)
     elif tool == ToolEnum.WEB_SEARCH:
         results = duckduckgo(user_prompt)
+    
 
     llm = LLM()
     
@@ -31,43 +31,45 @@ def send_response(user_prompt: str, tool: ToolEnum):
         system_prompt = "You are a helpful assistant who provides web search results. Create a friendly response that lists all the search results with their titles and links in a well-formatted, easy-to-read manner. Start with a brief introduction acknowledging the user's search query, then present each result as a numbered list item with the title and clickable link. End with a brief, encouraging closing remark."
     
     prompt_to_llm = f"USER PROMPT:{user_prompt}\n\nTool: {tool}\n\nResponse: {results}"
-    response = llm.generate(prompt_to_llm, system_prompt)
+    for response in llm.generate(prompt_to_llm, system_prompt):
+        yield response
+    # response = llm.generate(prompt_to_llm, system_prompt)
 
-    connection_manager = PostgresConnection(
-        host=os.getenv("POSTGRES_HOST"),
-        port=os.getenv("POSTGRES_PORT"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD"),
-        database=os.getenv("POSTGRES_DB")
-    )
-    table_manager = DatabaseTableManager(connection_manager)
-    data_manager = DatabaseDataManager("%s", connection_manager)
+    # connection_manager = PostgresConnection(
+    #     host=os.getenv("POSTGRES_HOST"),
+    #     port=os.getenv("POSTGRES_PORT"),
+    #     user=os.getenv("POSTGRES_USER"),
+    #     password=os.getenv("POSTGRES_PASSWORD"),
+    #     database=os.getenv("POSTGRES_DB")
+    # )
+    # table_manager = DatabaseTableManager(connection_manager)
+    # data_manager = DatabaseDataManager("%s", connection_manager)
     
-    db = DatabaseOperations(
-        connection_manager=connection_manager,
-        table_manager=table_manager,
-        data_manager=data_manager
-    )
-    columns = {
-        "id": "SERIAL PRIMARY KEY",
-        "timestamp": "TIMESTAMP",
-        "prompt": "TEXT",
-        "tool": "TEXT",
-        "response": "TEXT"
-    }
-    db.create_table("prompt_log", columns)
-    data = {
-        "timestamp": datetime.now(),
-        "prompt": user_prompt,
-        "tool": tool.value,
-        "response": response
-    }
-    db.insert("prompt_log", data)
-    # print(db.read("prompt_log"))
-    # redis.set(user_prompt, response)
-    data['timestamp'] = data['timestamp'].isoformat()
-    redis.push("user", json.dumps(data))
-    redis.trim("user", 0, 9)
-    print(redis.get_list("user"))
+    # db = DatabaseOperations(
+    #     connection_manager=connection_manager,
+    #     table_manager=table_manager,
+    #     data_manager=data_manager
+    # )
+    # columns = {
+    #     "id": "SERIAL PRIMARY KEY",
+    #     "timestamp": "TIMESTAMP",
+    #     "prompt": "TEXT",
+    #     "tool": "TEXT",
+    #     "response": "TEXT"
+    # }
+    # db.create_table("prompt_log", columns)
+    # data = {
+    #     "timestamp": datetime.now(),
+    #     "prompt": user_prompt,
+    #     "tool": tool.value,
+    #     "response": response
+    # }
+    # db.insert("prompt_log", data)
+    # # print(db.read("prompt_log"))
+    # # redis.set(user_prompt, response)
+    # data['timestamp'] = data['timestamp'].isoformat()
+    # redis.push("user", json.dumps(data))
+    # redis.trim("user", 0, 9)
+    # print(redis.get_list("user"))
     
     return response

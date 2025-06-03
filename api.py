@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from main import send_response
 from fastapi.websockets import WebSocket
-from models import Payload
+from models import Payload, ToolEnum
 
 app = FastAPI()
 
@@ -19,8 +19,9 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
 
     while True:
-        data = await websocket.receive_text()
+        data = await websocket.receive_json()
         print(f"Received from client: {data}")
-        await websocket.send_text("Hello, client!")
+        for response in send_response(data['prompt'], ToolEnum(data['tool'])):
+            await websocket.send_text(response)
     
 

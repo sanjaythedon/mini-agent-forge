@@ -38,8 +38,9 @@ class LLM:
                         content = chunk.choices[0].delta.content
                         print(content, end="", flush=True)  # Print without newline and flush immediately
                         full_response += content
+                        yield content
                 
                 print()  # Print a newline at the end
-                return full_response
+                # return full_response
         except Exception as e:
             raise Exception(f"Error generating response: {e}")
