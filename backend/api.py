@@ -2,7 +2,7 @@ import json
 import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from main import generate_prompt_to_llm
+from functions import generate_prompt_to_llm
 from fastapi.websockets import WebSocket
 from models import Payload, ToolEnum
 from Database.connections import PostgresConnection
