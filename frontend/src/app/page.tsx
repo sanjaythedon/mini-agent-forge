@@ -15,9 +15,18 @@ export default function Home() {
   const [selectedTool, setSelectedTool] = useState("web-search");
   const [isStreaming, setIsStreaming] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+  const [error, setError] = useState<{message: string; isOpen: boolean}>({message: '', isOpen: false});
   const wsRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  const showError = (message: string) => {
+    setError({message, isOpen: true});
+  };
+
+  const closeError = () => {
+    setError(prev => ({...prev, isOpen: false}));
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -68,19 +77,10 @@ export default function Home() {
         
         // Handle error status
         if (data.status === 'error') {
-          setChatHistory(prev => {
-            const newHistory = [...prev];
-            const lastIndex = newHistory.length - 1;
-            if (lastIndex >= 0) {
-              newHistory[lastIndex] = {
-                ...newHistory[lastIndex],
-                response: `${data.message || 'An error occurred'}`,
-                isError: true
-              };
-            }
-            return newHistory;
-          });
+          showError(data.message || 'An error occurred while processing your request.');
           setIsStreaming(false);
+          // Remove the last entry since we're showing the error in a popup
+          setChatHistory(prev => prev.slice(0, -1));
           return;
         }
         
@@ -158,22 +158,43 @@ export default function Home() {
       setPrompt("")
     } else {
       // WebSocket is not connected, show an error message
-      setChatHistory(prev => {
-        const newHistory = [...prev];
-        const lastIndex = newHistory.length - 1;
-        if (lastIndex >= 0) {
-          newHistory[lastIndex] = {
-            ...newHistory[lastIndex],
-            response: "Error: Could not connect to the server. Please try again later."
-          };
-        }
-        return newHistory;
-      });
+      showError("Could not connect to the server. Please try again later.");
+      // Remove the last entry since we're showing the error in a popup
+      setChatHistory(prev => prev.slice(0, -1));
     }
   };
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Error Popup */}
+      {error.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full shadow-xl">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-red-600 dark:text-red-400">Error</h3>
+              <button 
+                onClick={closeError}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                aria-label="Close error message"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{error.message}</p>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={closeError}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <header className="shrink-0 py-4 px-6 border-b bg-white dark:bg-gray-800">
         <h1 className="text-xl font-bold text-center">Chatbot</h1>
       </header>
@@ -194,7 +215,7 @@ export default function Home() {
                 <div className="flex justify-start">
                   <div 
                     className="max-w-[80%] p-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 [&_a]:text-blue-600 [&_a]:dark:text-blue-400 [&_a]:underline [&_a]:break-all [&_strong]:font-bold"
-                    dangerouslySetInnerHTML={{ __html: chat.response || (index === chatHistory.length - 1 && isStreaming ? '•••' : '') }}
+                    dangerouslySetInnerHTML={{ __html: index === chatHistory.length - 1 && isStreaming ? '•••' : (chat.response || '') }}
                   />
                 </div>
               </div>
