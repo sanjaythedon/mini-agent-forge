@@ -2,13 +2,14 @@ import json
 import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from main import send_response
+from main import generate_prompt_to_llm
 from fastapi.websockets import WebSocket
 from models import Payload, ToolEnum
 from Database.connections import PostgresConnection
 from Database.operations import DatabaseOperations, DatabaseTableManager, DatabaseDataManager
 from Redis import Redis
 from datetime import datetime
+from LLM import LLM
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -16,7 +17,7 @@ load_dotenv()
 redis = Redis(
     host=os.getenv("REDIS_HOST"),
     port=os.getenv("REDIS_PORT"),
-    db=os.getnv("REDIS_DB")
+    db=os.getenv("REDIS_DB")
 )
 
 app = FastAPI()
@@ -56,10 +57,21 @@ async def websocket_endpoint(websocket: WebSocket):
                 user_prompt = data['prompt']
                 tool = data['tool']
                 print(f"Received from client: {data}")
+
+                response = generate_prompt_to_llm(user_prompt, ToolEnum(tool))
+                print('response', response)
+
+                results = response['results']
+                system_prompt = response['system_prompt']
+                prompt_to_llm = f"USER PROMPT:{user_prompt}\n\nResponse: {results}"
+
+                # Initialize LLM
+                llm = LLM()
                 
-                response_generator = send_response(user_prompt, ToolEnum(tool))
+                response_generator = llm.generate_stream(prompt_to_llm, system_prompt)
                 
                 response = ""
+                print('i am here')
                 try:
                     async for chunk in response_generator:
                         if chunk:  # Only process non-empty chunks
