@@ -187,11 +187,6 @@ export default function Home() {
               {isStreaming ? 'Processing...' : 'Run'}
             </button>
           </form>
-          {isStreaming && (
-            <div className="mt-2 text-center text-sm text-gray-500">
-              Streaming response from server...
-            </div>
-          )}
         </div>
       </div>
     </div>
