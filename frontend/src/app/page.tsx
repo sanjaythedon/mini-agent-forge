@@ -15,6 +15,12 @@ export default function Home() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   // Fetch chat history on component mount
   useEffect(() => {
@@ -28,11 +34,23 @@ export default function Home() {
         setChatHistory(data.user_prompts || []);
       } catch (error) {
         console.error('Error fetching chat history:', error);
+      } finally {
+        // Scroll to bottom after loading history
+        setTimeout(scrollToBottom, 100);
       }
     };
     
     fetchChatHistory();
   }, []);
+
+  // Scroll to bottom when chat history or streaming state changes
+  useEffect(() => {
+    // Use requestAnimationFrame to ensure the DOM has updated
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [chatHistory, isStreaming]);
 
   useEffect(() => {
     // Initialize WebSocket connection
@@ -137,7 +155,7 @@ export default function Home() {
         <h1 className="text-xl font-bold text-center">Chatbot</h1>
       </header>
       <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={messagesContainerRef}>
           {chatHistory.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-gray-500 dark:text-gray-400">Start a conversation...</p>
@@ -159,6 +177,7 @@ export default function Home() {
               </div>
             ))
           )}
+          <div ref={messagesEndRef} />
         </div>
         <div className="shrink-0 border-t bg-white dark:bg-gray-800 p-4">
           <form onSubmit={handleSubmit} className="flex gap-2">
