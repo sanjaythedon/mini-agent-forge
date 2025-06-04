@@ -7,7 +7,7 @@ from models import ToolEnum
 from Database import DatabaseOperations, DatabaseTableManager, DatabaseDataManager
 from Database.connections import PostgresConnection
 from redis_definition import Redis
-from functions.calculator import calculator
+from Tools.calculator import CalculatorTool
 from functions.duckduckgo import duckduckgo
 
 load_dotenv()
@@ -17,7 +17,8 @@ async def send_response(user_prompt: str, tool: ToolEnum):
     try:
         # Get tool results (synchronously for now)
         if tool == ToolEnum.CALCULATOR:
-            results = calculator(user_prompt)
+            calculator_tool = CalculatorTool()
+            results = calculator_tool.calculator(user_prompt)
         elif tool == ToolEnum.WEB_SEARCH:
             results = duckduckgo(user_prompt)
         else:
