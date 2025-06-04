@@ -1,5 +1,6 @@
 import json
 from fastapi import FastAPI, WebSocket
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from Redis import Redis
 import os
@@ -30,13 +31,17 @@ def read_root():
 
 @app.get("/chat-history")
 def get_recent_prompts(user_name: str):
-    prompts = redis.get_list(user_name)
-    response = []
-    for prompt in prompts[::-1]:
-        prompt = json.loads(prompt)
-        response.append(prompt)
+    try:
+        prompts = redis.get_list(user_name)
+        response = []
+        for prompt in prompts[::-1]:
+            prompt = json.loads(prompt)
+            response.append(prompt)
 
-    return {"user_prompts": response}
+        return {"user_prompts": response}
+    except Exception as e:
+        print(f"Error getting chat history: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @app.websocket("/ws")

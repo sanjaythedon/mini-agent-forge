@@ -38,7 +38,9 @@ export default function Home() {
       try {
         const response = await fetch('http://127.0.0.1:8000/chat-history?user_name=user');
         if (!response.ok) {
-          throw new Error('Failed to fetch chat history');
+          const errorData = await response.json().catch(() => ({}));
+          const errorMessage = errorData.error || 'Failed to fetch chat history';
+          throw new Error(`${errorMessage} (Status: ${response.status})`);
         }
         const data = await response.json();
         setChatHistory(data.user_prompts || []);
