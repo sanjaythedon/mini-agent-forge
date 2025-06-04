@@ -28,7 +28,14 @@ async def send_response(user_prompt: str, tool: ToolEnum):
         
         # Set appropriate system prompt
         if tool == ToolEnum.CALCULATOR:
-            system_prompt = "You are a friendly assistant who helps with calculations. Present the user's calculation query along with its result in a clear, conversational way. Make your response concise but warm. Only use the information provided in the user's query and the calculation result."
+            system_prompt = """You are a friendly assistant who helps with calculations. Present the user's calculation query along with its result in a clear, conversational way. 
+            
+IMPORTANT: 
+- Use plain text with standard math operators (+, -, *, /, ^, etc.)
+- DO NOT use any LaTeX math delimiters (like $ or $$)
+- DO NOT use markdown formatting
+- Keep the response concise but warm
+- Only use the information provided in the user's query and the calculation result"""
         elif tool == ToolEnum.WEB_SEARCH:
             system_prompt = """You are a helpful assistant who provides web search results. Generate an HTML-formatted response that lists all search results with proper styling.
 
