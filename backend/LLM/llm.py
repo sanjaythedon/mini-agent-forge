@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 load_dotenv()
 
@@ -11,36 +11,35 @@ class LLM:
     
     def _authenticate(self):
         try:
-            self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            self.client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         except Exception as e:
             raise Exception(f"Error authenticating to OpenAI: {e}")
     
-    def generate(self, user_prompt, system_prompt):
+    async def generate_stream(self, user_prompt, system_prompt):
         try:
-            if self.client:
-                # Create a streaming completion
-                response = self.client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt}
-                    ],
-                    stream=True  # Enable streaming
-                )
+            if not self.client:
+                raise Exception("OpenAI client not initialized")
                 
-                # Initialize an empty string to collect the full response
-                full_response = ""
-                
-                # Process and print the streaming response
-                for chunk in response:
-                    # Extract the content from the chunk
-                    if chunk.choices and chunk.choices[0].delta.content:
-                        content = chunk.choices[0].delta.content
-                        print(content, end="", flush=True)  # Print without newline and flush immediately
-                        full_response += content
-                        yield content
-                
-                print()  # Print a newline at the end
-                # return full_response
+            # Create a streaming completion
+            stream = await self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                stream=True,
+                timeout=30.0  # 30 second timeout
+            )
+            
+            # Process the streaming response asynchronously
+            async for chunk in stream:
+                if chunk.choices and chunk.choices[0].delta.content:
+                    content = chunk.choices[0].delta.content
+                    print(content, end="", flush=True)
+                    yield content
+            
+            print()  # Newline at the end
+            
         except Exception as e:
-            raise Exception(f"Error generating response: {e}")
+            print(f"Error in generate_stream: {e}")
+            yield f"Error: {str(e)}"
