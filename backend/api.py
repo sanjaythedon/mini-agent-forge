@@ -63,17 +63,17 @@ async def websocket_endpoint(websocket: WebSocket):
                     async for chunk in response_generator:
                         if chunk:  # Only process non-empty chunks
                             response += chunk
-                            await websocket.send_text(chunk)
+                            await websocket.send_json({"chunk": chunk, "status": "inprogress"})
                             await asyncio.sleep(0.001)
                     
                     print('Full response:')
                     print(response)
                 except Exception as e:
                     print(f"Error processing chunks: {e}")
-                    await websocket.send_text(f"Error: {str(e)}")
+                    await websocket.send_json({"chunk": f"Error: {str(e)}", "status": "error"})
                 finally:
                     # Send an end-of-stream marker if needed
-                    # await websocket.send_json({"status": "complete"})
+                    await websocket.send_json({"status": "complete"})
                     pass
 
                 connection_manager = PostgresConnection(

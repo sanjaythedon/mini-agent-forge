@@ -45,7 +45,11 @@ export default function Home() {
       
       ws.onmessage = (event) => {
         console.log('WebSocket message received:', event.data);
-        const data = event.data;
+        const data = JSON.parse(event.data);
+        if (data.status && data.status === 'complete') {
+          setIsStreaming(false);
+          return;
+        }
         
         // Update the last chat entry's response with the streaming data
         setChatHistory(prev => {
@@ -54,7 +58,7 @@ export default function Home() {
           if (lastIndex >= 0) {
             newHistory[lastIndex] = {
               ...newHistory[lastIndex],
-              response: (newHistory[lastIndex].response || '') + data
+              response: (newHistory[lastIndex].response || '') + data.chunk
             };
           }
           return newHistory;
