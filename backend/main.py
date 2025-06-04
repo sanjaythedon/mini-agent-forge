@@ -18,7 +18,7 @@ async def send_response(user_prompt: str, tool: ToolEnum):
         # Get tool results (synchronously for now)
         if tool == ToolEnum.CALCULATOR:
             calculator_tool = CalculatorTool()
-            results = calculator_tool.calculator(user_prompt)
+            results = calculator_tool.calculate(user_prompt)
         elif tool == ToolEnum.WEB_SEARCH:
             web_search_tool = WebSearchTool(os.getenv("DUCKDUCKGO_API_KEY"))
             results = web_search_tool.search(user_prompt)

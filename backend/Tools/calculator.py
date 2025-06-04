@@ -77,7 +77,7 @@ class CalculatorTool:
         
         return stack[0]
 
-    def calculator(self, expression):
+    def calculate(self, expression):
         """
         Aggregates all functions to evaluate the expression
         '2+2*5' -> 12
