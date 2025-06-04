@@ -1,7 +1,7 @@
 from Tools.interfaces import Tool
 
 
-class CalculatorTool:
+class Calculator:
     @staticmethod
     def tokenize(expression):
         """
