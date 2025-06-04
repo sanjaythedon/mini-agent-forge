@@ -1,2 +1,2 @@
-from calculator import CalculatorTool
-from websearch import WebSearchTool
+from .calculator import CalculatorTool
+from .websearch import WebSearchTool
