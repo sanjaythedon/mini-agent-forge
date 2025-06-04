@@ -38,7 +38,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     await asyncio.sleep(0.001)
                 
                 # Send an end-of-stream marker
-                await websocket.send_json({"status": "complete"})
+                # await websocket.send_json({"status": "complete"})
                 
             except asyncio.CancelledError:
                 # Handle client disconnection
