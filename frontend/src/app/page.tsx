@@ -7,6 +7,7 @@ interface ChatHistory {
   prompt: string;
   tool: string;
   response: string;
+  isError?: boolean;
 }
 
 export default function Home() {
@@ -64,23 +65,45 @@ export default function Home() {
       ws.onmessage = (event) => {
         console.log('WebSocket message received:', event.data);
         const data = JSON.parse(event.data);
-        if (data.status && data.status === 'complete') {
+        
+        // Handle error status
+        if (data.status === 'error') {
+          setChatHistory(prev => {
+            const newHistory = [...prev];
+            const lastIndex = newHistory.length - 1;
+            if (lastIndex >= 0) {
+              newHistory[lastIndex] = {
+                ...newHistory[lastIndex],
+                response: `${data.message || 'An error occurred'}`,
+                isError: true
+              };
+            }
+            return newHistory;
+          });
           setIsStreaming(false);
           return;
         }
         
-        // Update the last chat entry's response with the streaming data
-        setChatHistory(prev => {
-          const newHistory = [...prev];
-          const lastIndex = newHistory.length - 1;
-          if (lastIndex >= 0) {
-            newHistory[lastIndex] = {
-              ...newHistory[lastIndex],
-              response: (newHistory[lastIndex].response || '') + data.chunk
-            };
-          }
-          return newHistory;
-        });
+        // Handle completion status
+        if (data.status === 'complete') {
+          setIsStreaming(false);
+          return;
+        }
+        
+        // Handle in-progress streaming data
+        if (data.status === 'inprogress' && data.chunk) {
+          setChatHistory(prev => {
+            const newHistory = [...prev];
+            const lastIndex = newHistory.length - 1;
+            if (lastIndex >= 0) {
+              newHistory[lastIndex] = {
+                ...newHistory[lastIndex],
+                response: (newHistory[lastIndex].response || '') + data.chunk
+              };
+            }
+            return newHistory;
+          });
+        }
       };
       
       ws.onclose = () => {

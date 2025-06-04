@@ -1,5 +1,5 @@
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 
 class ToolEnum(Enum):
@@ -8,5 +8,12 @@ class ToolEnum(Enum):
 
 
 class Payload(BaseModel):
-    prompt: str = Field(..., max_length=500)
+    prompt: str
     tool: ToolEnum
+
+    @validator('prompt')
+    def validate_prompt_length(cls, v):
+        word_count = len(v)
+        if word_count > 500:
+            raise ValueError("Prompt must not exceed 500 words")
+        return v

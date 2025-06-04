@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 from typing import Dict, Any, AsyncGenerator
 from fastapi import WebSocket
-
+from models import Payload
 from LLM.llm import LLM
 from Database.operations import DatabaseOperations
 from Database.connections.postgres import PostgresConnection
@@ -77,15 +77,24 @@ class WebSocketManager:
 
     async def _process_message(self, data: Dict[str, Any]):
         """Process a single WebSocket message"""
-        user_prompt = data['prompt']
-        tool = data['tool']
-        print(f"Received from client: {data}")
+        try:
+            # Validate payload using Pydantic model
+            payload = Payload(**data)
+            print(f"Received from client: {data}")
 
-        # Generate response using LLM
-        response = await self._generate_llm_response(user_prompt, ToolEnum(tool))
-        
-        # Log the interaction
-        await self._log_interaction(user_prompt, tool, response)
+            # Generate response using LLM
+            response = await self._generate_llm_response(payload.prompt, payload.tool)
+            
+            # Log the interaction
+            await self._log_interaction(payload.prompt, payload.tool.value, response)
+            
+        except ValueError as e:
+            # Send validation error to client
+            for err in e.errors():
+                error_msg = err['msg']
+                print(f"Validation error: {error_msg}")
+                await self._send_error(error_msg)
+                return
 
     async def _generate_llm_response(self, user_prompt: str, tool: ToolEnum) -> str:
         """Generate response using LLM and stream it back to the client"""
@@ -143,7 +152,7 @@ class WebSocketManager:
 
     async def _send_error(self, error_msg: str):
         """Send error message to the client"""
-        await self.websocket.send_json({"error": error_msg})
+        await self.websocket.send_json({"status": "error", "message": error_msg})
 
     async def _close_connection(self):
         """Safely close the WebSocket connection"""
