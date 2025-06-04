@@ -1,21 +1,11 @@
 import os
-import json
-from datetime import datetime
 from dotenv import load_dotenv
 from LLM import LLM
 from models import ToolEnum
-from Database import DatabaseOperations, DatabaseTableManager, DatabaseDataManager
-from Database.connections import PostgresConnection
-from Redis import Redis
 from Tools import CalculatorUtils, WebSearchUtils
 from Tools import CalculatorTool, WebSearchTool
 
 load_dotenv()
-redis = Redis(
-    host=os.getenv("REDIS_HOST"),
-    port=os.getenv("REDIS_PORT"),
-    db=os.getenv("REDIS_DB")
-)
 
 async def send_response(user_prompt: str, tool: ToolEnum):
     try:
