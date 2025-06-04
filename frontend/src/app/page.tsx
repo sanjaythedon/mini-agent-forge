@@ -12,8 +12,6 @@ interface ChatHistory {
 export default function Home() {
   const [prompt, setPrompt] = useState("");
   const [selectedTool, setSelectedTool] = useState("web-search");
-  const [userPrompt, setUserPrompt] = useState("");
-  const [response, setResponse] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
@@ -49,8 +47,18 @@ export default function Home() {
         console.log('WebSocket message received:', event.data);
         const data = event.data;
         
-        // Handle streaming response - append to the current response
-        setResponse(prev => prev + data);
+        // Update the last chat entry's response with the streaming data
+        setChatHistory(prev => {
+          const newHistory = [...prev];
+          const lastIndex = newHistory.length - 1;
+          if (lastIndex >= 0) {
+            newHistory[lastIndex] = {
+              ...newHistory[lastIndex],
+              response: (newHistory[lastIndex].response || '') + data
+            };
+          }
+          return newHistory;
+        });
       };
       
       ws.onclose = () => {
@@ -83,11 +91,15 @@ export default function Home() {
     e.preventDefault();
     if (!prompt.trim() || isStreaming) return;
 
-    // Store the user prompt
-    setUserPrompt(prompt);
+    // Create a new chat history entry
+    const newEntry: ChatHistory = {
+      timestamp: new Date().toISOString(),
+      prompt: prompt,
+      tool: selectedTool,
+      response: ""
+    };
     
-    // Clear previous response
-    setResponse("");
+    setChatHistory(prev => [...prev, newEntry]);
     
     // Send the message to the WebSocket server
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -98,10 +110,20 @@ export default function Home() {
         tool: selectedTool
       }));
       
-      setPrompt("");
+      setPrompt("")
     } else {
       // WebSocket is not connected, show an error message
-      setResponse("Error: Could not connect to the server. Please try again later.");
+      setChatHistory(prev => {
+        const newHistory = [...prev];
+        const lastIndex = newHistory.length - 1;
+        if (lastIndex >= 0) {
+          newHistory[lastIndex] = {
+            ...newHistory[lastIndex],
+            response: "Error: Could not connect to the server. Please try again later."
+          };
+        }
+        return newHistory;
+      });
     }
   };
 
@@ -111,50 +133,26 @@ export default function Home() {
         <h1 className="text-xl font-bold text-center">Chatbot</h1>
       </header>
       <div className="flex-1 overflow-auto p-4 space-y-4">
-        {chatHistory.length === 0 && !userPrompt && (
+        {chatHistory.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500 dark:text-gray-400">Start a conversation...</p>
           </div>
-        )}
-        
-        {/* Display chat history */}
-        {chatHistory.map((chat, index) => (
-          <div key={index} className="space-y-2">
-            <div className="flex justify-end">
-              <div className="max-w-[80%] p-3 rounded-lg bg-blue-500 text-white">
-                {chat.prompt}
+        ) : (
+          chatHistory.map((chat, index) => (
+            <div key={index} className="space-y-2">
+              <div className="flex justify-end">
+                <div className="max-w-[80%] p-3 rounded-lg bg-blue-500 text-white">
+                  {chat.prompt}
+                </div>
               </div>
-            </div>
-            <div className="flex justify-start">
-              <div 
-                className="max-w-[80%] p-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                dangerouslySetInnerHTML={{ __html: chat.response }}
-              />
-            </div>
-          </div>
-        ))}
-        
-        {/* Current conversation */}
-        {userPrompt && (
-          <>
-            <div className="flex justify-end">
-              <div className="max-w-[80%] p-3 rounded-lg bg-blue-500 text-white">
-                {userPrompt}
-              </div>
-            </div>
-            
-            {(response || isStreaming) && (
-              <div className="flex justify-start w-full">
+              <div className="flex justify-start">
                 <div 
                   className="max-w-[80%] p-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 [&_a]:text-blue-600 [&_a]:dark:text-blue-400 [&_a]:underline [&_a]:break-all [&_strong]:font-bold"
-                  dangerouslySetInnerHTML={{ __html: response }}
+                  dangerouslySetInnerHTML={{ __html: chat.response || (index === chatHistory.length - 1 && isStreaming ? '•••' : '') }}
                 />
-                {isStreaming && response.length === 0 && (
-                  <span className="animate-pulse">•••</span>
-                )}
               </div>
-            )}
-          </>
+            </div>
+          ))
         )}
       </div>
       <div className="border-t bg-white dark:bg-gray-800 p-4">
