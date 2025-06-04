@@ -215,7 +215,7 @@ export default function Home() {
                 <div className="flex justify-start">
                   <div 
                     className="max-w-[80%] p-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 [&_a]:text-blue-600 [&_a]:dark:text-blue-400 [&_a]:underline [&_a]:break-all [&_strong]:font-bold"
-                    dangerouslySetInnerHTML={{ __html: index === chatHistory.length - 1 && isStreaming ? '•••' : (chat.response || '') }}
+                    dangerouslySetInnerHTML={{ __html: chat.response || '' }}
                   />
                 </div>
               </div>
