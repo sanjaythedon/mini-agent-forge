@@ -33,9 +33,9 @@ app.add_middleware(
 def read_root():
     return {"message": "Hello World"}
 
-@app.get("/get")
-def get_recent_prompts():
-    prompts = redis.get_list("user")
+@app.get("/chat-history")
+def get_recent_prompts(user_name: str):
+    prompts = redis.get_list(user_name)
     response = []
     for prompt in prompts[::-1]:
         prompt = json.loads(prompt)
