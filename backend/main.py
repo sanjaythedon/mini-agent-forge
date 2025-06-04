@@ -68,7 +68,7 @@ Make sure to:
             system_prompt = "You are a helpful assistant."
         
         # Prepare the prompt for LLM
-        prompt_to_llm = f"USER PROMPT:{user_prompt}\n\nTool: {tool}\n\nResponse: {results}"
+        prompt_to_llm = f"USER PROMPT:{user_prompt}\n\nResponse: {results}"
         
         # Stream the response asynchronously
         async for chunk in llm.generate_stream(prompt_to_llm, system_prompt):
@@ -77,43 +77,3 @@ Make sure to:
     except Exception as e:
         print(f"Error in send_response: {e}")
         yield f"Error: {str(e)}"
-    # response = llm.generate(prompt_to_llm, system_prompt)
-
-    # connection_manager = PostgresConnection(
-    #     host=os.getenv("POSTGRES_HOST"),
-    #     port=os.getenv("POSTGRES_PORT"),
-    #     user=os.getenv("POSTGRES_USER"),
-    #     password=os.getenv("POSTGRES_PASSWORD"),
-    #     database=os.getenv("POSTGRES_DB")
-    # )
-    # table_manager = DatabaseTableManager(connection_manager)
-    # data_manager = DatabaseDataManager("%s", connection_manager)
-    
-    # db = DatabaseOperations(
-    #     connection_manager=connection_manager,
-    #     table_manager=table_manager,
-    #     data_manager=data_manager
-    # )
-    # columns = {
-    #     "id": "SERIAL PRIMARY KEY",
-    #     "timestamp": "TIMESTAMP",
-    #     "prompt": "TEXT",
-    #     "tool": "TEXT",
-    #     "response": "TEXT"
-    # }
-    # db.create_table("prompt_log", columns)
-    # data = {
-    #     "timestamp": datetime.now(),
-    #     "prompt": user_prompt,
-    #     "tool": tool.value,
-    #     "response": response
-    # }
-    # db.insert("prompt_log", data)
-    # # print(db.read("prompt_log"))
-    # # redis.set(user_prompt, response)
-    # data['timestamp'] = data['timestamp'].isoformat()
-    # redis.push("user", json.dumps(data))
-    # redis.trim("user", 0, 9)
-    # print(redis.get_list("user"))
-    
-    # return response

@@ -107,8 +107,6 @@ async def websocket_endpoint(websocket: WebSocket):
                     "response": response
                 }
                 db.insert("prompt_log", data)
-                # print(db.read("prompt_log"))
-                # redis.set(user_prompt, response)
                 data['timestamp'] = data['timestamp'].isoformat()
                 redis.push("user", json.dumps(data))
                 redis.trim("user", 0, 9)
