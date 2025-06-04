@@ -33,6 +33,7 @@ app.add_middleware(
 def read_root():
     return {"message": "Hello World"}
 
+
 @app.get("/chat-history")
 def get_recent_prompts(user_name: str):
     prompts = redis.get_list(user_name)
@@ -43,10 +44,6 @@ def get_recent_prompts(user_name: str):
 
     return {"user_prompts": response}
 
-@app.post("/run")
-def run(payload: Payload):
-    response = send_response(payload.prompt, payload.tool)
-    return {"message": response}
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
