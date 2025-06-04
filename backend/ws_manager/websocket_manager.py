@@ -142,7 +142,6 @@ class WebSocketManager:
             data['timestamp'] = data['timestamp'].isoformat()
             self.redis.push("user", json.dumps(data))
             self.redis.trim("user", 0, 9)
-            print(self.redis.get_list("user"))
         except Exception as e:
             print(f"Error logging interaction: {e}")
             await self._send_error(str(e))
