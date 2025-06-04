@@ -7,13 +7,17 @@ from fastapi.websockets import WebSocket
 from models import Payload, ToolEnum
 from Database.connections import PostgresConnection
 from Database.operations import DatabaseOperations, DatabaseTableManager, DatabaseDataManager
-from redis_definition import Redis
+from Redis import Redis
 from datetime import datetime
 import os
 from dotenv import load_dotenv
 load_dotenv()
 
-redis = Redis()
+redis = Redis(
+    host=os.getenv("REDIS_HOST"),
+    port=os.getenv("REDIS_PORT"),
+    db=os.getenv("REDIS_DB")
+)
 
 app = FastAPI()
 

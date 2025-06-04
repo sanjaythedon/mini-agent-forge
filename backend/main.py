@@ -6,12 +6,16 @@ from LLM import LLM
 from models import ToolEnum
 from Database import DatabaseOperations, DatabaseTableManager, DatabaseDataManager
 from Database.connections import PostgresConnection
-from redis_definition import Redis
+from Redis import Redis
 from Tools import CalculatorTool
 from Tools import WebSearchTool
 
 load_dotenv()
-redis = Redis()
+redis = Redis(
+    host=os.getenv("REDIS_HOST"),
+    port=os.getenv("REDIS_PORT"),
+    db=os.getenv("REDIS_DB")
+)
 
 async def send_response(user_prompt: str, tool: ToolEnum):
     try:
