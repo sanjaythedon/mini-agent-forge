@@ -64,7 +64,7 @@ The backend is built with FastAPI and provides WebSocket endpoints for real-time
 
 4. Start the services:
    ```bash
-   docker-compose up --build
+   docker-compose up -d
    ```
 
 5. The backend server will be available at `http://localhost:8000`
@@ -83,11 +83,6 @@ To run the backend tests:
    python -m unittest test.py
    ```
 
-3. For more verbose output:
-   ```bash
-   python -m unittest -v test.py
-   ```
-
 ## Frontend
 
 The frontend is a modern web application built with a JavaScript framework (React/Vue/Angular).
@@ -102,27 +97,16 @@ The frontend is a modern web application built with a JavaScript framework (Reac
 2. Install dependencies:
    ```bash
    npm install
-   # or
-   yarn install
    ```
 
 ### Running the Application
 
 1. Start the development server:
    ```bash
-   npm start
-   # or
-   yarn start
+   npm run dev
    ```
 
 2. The application will be available at `http://localhost:3000` (or another port if 3000 is in use)
-
-3. To build for production:
-   ```bash
-   npm run build
-   # or
-   yarn build
-   ```
 
 ## Environment Variables
 
