@@ -60,6 +60,7 @@ class WebSocketManager:
             print("Client disconnected")
         except Exception as e:
             print(f"WebSocket connection error: {e}")
+            await self._send_error(str(e))
         finally:
             await self._close_connection()
 
@@ -126,21 +127,25 @@ class WebSocketManager:
 
     async def _log_interaction(self, user_prompt: str, tool: str, response: str):
         """Log the interaction to database and Redis"""
-        data = {
-            "timestamp": datetime.now(),
-            "prompt": user_prompt,
-            "tool": tool,
-            "response": response
-        }
+        try:
+            data = {
+                "timestamp": datetime.now(),
+                "prompt": user_prompt,
+                "tool": tool,
+                "response": response
+            }
         
-        # Log to PostgreSQL
-        self.db.insert("prompt_log", data)
+            # Log to PostgreSQL
+            self.db.insert("prompt_log", data)
         
-        # Update Redis
-        data['timestamp'] = data['timestamp'].isoformat()
-        self.redis.push("user", json.dumps(data))
-        self.redis.trim("user", 0, 9)
-        print(self.redis.get_list("user"))
+            # Update Redis
+            data['timestamp'] = data['timestamp'].isoformat()
+            self.redis.push("user", json.dumps(data))
+            self.redis.trim("user", 0, 9)
+            print(self.redis.get_list("user"))
+        except Exception as e:
+            print(f"Error logging interaction: {e}")
+            await self._send_error(str(e))
 
     async def _send_chunk(self, chunk: str):
         """Send a chunk of the response to the client"""
