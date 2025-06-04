@@ -30,7 +30,27 @@ async def send_response(user_prompt: str, tool: ToolEnum):
         if tool == ToolEnum.CALCULATOR:
             system_prompt = "You are a friendly assistant who helps with calculations. Present the user's calculation query along with its result in a clear, conversational way. Make your response concise but warm. Only use the information provided in the user's query and the calculation result."
         elif tool == ToolEnum.WEB_SEARCH:
-            system_prompt = "You are a helpful assistant who provides web search results. Create a friendly response that lists all the search results with their titles and links in a well-formatted, easy-to-read manner. Start with a brief introduction acknowledging the user's search query, then present each result as a numbered list item with the title and clickable link. End with a brief, encouraging closing remark."
+            system_prompt = """You are a helpful assistant who provides web search results. Generate an HTML-formatted response that lists all search results with proper styling.
+
+Format your response as follows:
+1. Start with a header element containing a friendly reply for the search query
+2. Create a numbered list of results where each item contains:
+   - The title in bold
+   - The URL as a clickable link
+3. End with a closing remark in a paragraph
+
+Example format:
+<header><h2>Some friendly reply about the query:</h2></header>
+<ol>
+  <li><strong>Title 1</strong><br><a href="https://example1.com">https://example1.com</a></li>
+  <li><strong>Title 2</strong><br><a href="https://example2.com">https://example2.com</a></li>
+</ol>
+<p>Some closing remark about the query.</p>
+
+Make sure to:
+- Use proper HTML escaping for special characters
+- Include the full URL in the link text
+- Keep the response clean and well-formatted"""
         else:
             system_prompt = "You are a helpful assistant."
         
