@@ -1,1 +1,2 @@
 from calculator import CalculatorTool
+from websearch import WebSearchTool

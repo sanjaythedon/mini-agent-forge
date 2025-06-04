@@ -7,8 +7,8 @@ from models import ToolEnum
 from Database import DatabaseOperations, DatabaseTableManager, DatabaseDataManager
 from Database.connections import PostgresConnection
 from redis_definition import Redis
-from Tools.calculator import CalculatorTool
-from functions.duckduckgo import duckduckgo
+from Tools import CalculatorTool
+from Tools import WebSearchTool
 
 load_dotenv()
 redis = Redis()
@@ -20,7 +20,8 @@ async def send_response(user_prompt: str, tool: ToolEnum):
             calculator_tool = CalculatorTool()
             results = calculator_tool.calculator(user_prompt)
         elif tool == ToolEnum.WEB_SEARCH:
-            results = duckduckgo(user_prompt)
+            web_search_tool = WebSearchTool(os.getenv("DUCKDUCKGO_API_KEY"))
+            results = web_search_tool.search(user_prompt)
         else:
             results = ""
         
