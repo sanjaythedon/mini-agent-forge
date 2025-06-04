@@ -13,14 +13,14 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
-  app:
-    image: my_app
-    container_name: app
-    environment:
-      POSTGRES_HOST: database
-      REDIS_HOST: redis
-    ports:
-      - "8000:8000"
+  # app:
+  #   image: my_app
+  #   container_name: app
+  #   environment:
+  #     POSTGRES_HOST: database
+  #     REDIS_HOST: redis
+  #   ports:
+  #     - "8000:8000"
       
       
       
