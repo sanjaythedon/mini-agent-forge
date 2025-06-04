@@ -20,7 +20,6 @@ class LLM:
             if not self.client:
                 raise Exception("OpenAI client not initialized")
                 
-            # Create a streaming completion
             stream = await self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
@@ -28,18 +27,15 @@ class LLM:
                     {"role": "user", "content": user_prompt}
                 ],
                 stream=True,
-                timeout=30.0  # 30 second timeout
+                timeout=30.0  
             )
             
-            # Process the streaming response asynchronously
             async for chunk in stream:
                 if chunk.choices and chunk.choices[0].delta.content:
                     content = chunk.choices[0].delta.content
                     # print(content, end="", flush=True)
                     yield content
-            
-            print()  # Newline at the end
-            
+                        
         except Exception as e:
             print(f"Error in generate_stream: {e}")
             yield f"Error: {str(e)}"

@@ -2,7 +2,7 @@ import os
 import json
 from datetime import datetime
 from dotenv import load_dotenv
-from LLM.llm import LLM
+from LLM import LLM
 from models import ToolEnum
 from Database import DatabaseOperations, DatabaseTableManager, DatabaseDataManager
 from Database.connections import PostgresConnection
