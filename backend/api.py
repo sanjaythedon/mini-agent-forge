@@ -21,6 +21,16 @@ app = FastAPI()
 def read_root():
     return {"message": "Hello World"}
 
+@app.get("/get")
+def get_recent_prompts():
+    prompts = redis.get_list("user")
+    response = []
+    for prompt in prompts:
+        prompt = json.loads(prompt)
+        response.append(prompt)
+
+    return {"user_prompts": response}
+
 @app.post("/run")
 def run(payload: Payload):
     response = send_response(payload.prompt, payload.tool)
