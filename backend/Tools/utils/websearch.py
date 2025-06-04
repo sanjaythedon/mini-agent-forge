@@ -1,7 +1,7 @@
 from serpapi import GoogleSearch
 
 
-class WebSearch:
+class WebSearchUtils:
     def __init__(self, api_key: str):
         self.api_key = api_key
         

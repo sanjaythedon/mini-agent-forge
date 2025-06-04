@@ -13,7 +13,6 @@ class Tool(ABC):
     def generate_prompt():
         pass
 
-
 class CalculatorTool(Tool):
     def __init__(self, tool_object):
         super().__init__(tool_object)
@@ -34,7 +33,6 @@ class CalculatorTool(Tool):
         - Only use the information provided in the user's query and the calculation result
         """
         return prompt
-    
 
 class WebSearchTool(Tool):
     def __init__(self, tool_object):

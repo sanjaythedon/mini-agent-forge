@@ -7,9 +7,8 @@ from models import ToolEnum
 from Database import DatabaseOperations, DatabaseTableManager, DatabaseDataManager
 from Database.connections import PostgresConnection
 from Redis import Redis
-from Tools import Calculator
-from Tools import WebSearch
-from Tools.interfaces import CalculatorTool, WebSearchTool
+from Tools import CalculatorUtils, WebSearchUtils
+from Tools import CalculatorTool, WebSearchTool
 
 load_dotenv()
 redis = Redis(
@@ -22,16 +21,16 @@ async def send_response(user_prompt: str, tool: ToolEnum):
     try:
         # Get tool results (synchronously for now)
         if tool == ToolEnum.CALCULATOR:
-            tool = CalculatorTool(Calculator())
+            tool = CalculatorTool(CalculatorUtils())
         elif tool == ToolEnum.WEB_SEARCH:
             duckduckgo_api_key = os.getenv("DUCKDUCKGO_API_KEY")
-            tool = WebSearchTool(WebSearch(duckduckgo_api_key))
+            tool = WebSearchTool(WebSearchUtils(duckduckgo_api_key))
         
         # Initialize LLM
         llm = LLM()
 
         results = tool.execute(user_prompt)
-        
+
         system_prompt = tool.generate_prompt()
         prompt_to_llm = f"USER PROMPT:{user_prompt}\n\nResponse: {results}"
         
