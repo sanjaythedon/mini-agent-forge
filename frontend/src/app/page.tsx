@@ -2,13 +2,39 @@
 
 import { useState, useEffect, useRef } from "react";
 
+interface ChatHistory {
+  timestamp: string;
+  prompt: string;
+  tool: string;
+  response: string;
+}
+
 export default function Home() {
   const [prompt, setPrompt] = useState("");
   const [selectedTool, setSelectedTool] = useState("web-search");
   const [userPrompt, setUserPrompt] = useState("");
   const [response, setResponse] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
+
+  // Fetch chat history on component mount
+  useEffect(() => {
+    const fetchChatHistory = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/get');
+        if (!response.ok) {
+          throw new Error('Failed to fetch chat history');
+        }
+        const data = await response.json();
+        setChatHistory(data.user_prompts || []);
+      } catch (error) {
+        console.error('Error fetching chat history:', error);
+      }
+    };
+    
+    fetchChatHistory();
+  }, []);
 
   useEffect(() => {
     // Initialize WebSocket connection
@@ -85,20 +111,38 @@ export default function Home() {
         <h1 className="text-xl font-bold text-center">Chatbot</h1>
       </header>
       <div className="flex-1 overflow-auto p-4 space-y-4">
-        {!userPrompt ? (
+        {chatHistory.length === 0 && !userPrompt && (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500 dark:text-gray-400">Start a conversation...</p>
           </div>
-        ) : (
+        )}
+        
+        {/* Display chat history */}
+        {chatHistory.map((chat, index) => (
+          <div key={index} className="space-y-2">
+            <div className="flex justify-end">
+              <div className="max-w-[80%] p-3 rounded-lg bg-blue-500 text-white">
+                {chat.prompt}
+              </div>
+            </div>
+            <div className="flex justify-start">
+              <div 
+                className="max-w-[80%] p-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                dangerouslySetInnerHTML={{ __html: chat.response }}
+              />
+            </div>
+          </div>
+        ))}
+        
+        {/* Current conversation */}
+        {userPrompt && (
           <>
-            {/* User prompt */}
             <div className="flex justify-end">
               <div className="max-w-[80%] p-3 rounded-lg bg-blue-500 text-white">
                 {userPrompt}
               </div>
             </div>
             
-            {/* AI response */}
             {(response || isStreaming) && (
               <div className="flex justify-start w-full">
                 <div 

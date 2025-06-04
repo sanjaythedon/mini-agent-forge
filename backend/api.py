@@ -1,6 +1,7 @@
 import json
 import asyncio
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from main import send_response
 from fastapi.websockets import WebSocket
 from models import Payload, ToolEnum
@@ -16,6 +17,13 @@ redis = Redis()
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def read_root():
@@ -25,7 +33,7 @@ def read_root():
 def get_recent_prompts():
     prompts = redis.get_list("user")
     response = []
-    for prompt in prompts:
+    for prompt in prompts[::-1]:
         prompt = json.loads(prompt)
         response.append(prompt)
 
